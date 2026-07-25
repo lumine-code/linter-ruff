@@ -1,7 +1,7 @@
 {
   "name": "linter-ruff",
   "author": "lumine-code",
-  "description": "A wrapper around the Python linter and formatter ruff",
+  "description": "A wrapper around the Python linter and formatter ruff.",
   "repository": "https://github.com/lumine-code/linter-ruff",
   "bugs": {
     "url": "https://github.com/lumine-code/linter-ruff/issues"

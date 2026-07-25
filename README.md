@@ -1,6 +1,8 @@
 # linter-ruff
 
-A wrapper around the Python linter and formatter [ruff](https://github.com/astral-sh/ruff). The package uses the linter top-level API to visualize errors and other types of messages with ease.
+A wrapper around the Python linter and formatter ruff.
+
+The package uses the linter top-level API to visualize [ruff](https://github.com/astral-sh/ruff) errors and other types of messages with ease.
 
 ## Features
 
