@@ -1,12 +1,22 @@
 # linter-ruff
 
-A wrapper around Python linter called [ruff](https://github.com/astral-sh/ruff). Package used linter top-level API to visualize errors and other types of messages with ease.
+A wrapper around the Python linter and formatter [ruff](https://github.com/astral-sh/ruff). The package uses the linter top-level API to visualize errors and other types of messages with ease.
 
-Supports both `.py` files and Jupyter notebooks (`.ipynb`). In notebook mode, each code cell is linted individually and messages are mapped to the correct cell via [jupyter-next](https://github.com/asiloisad/pulsar-jupyter-next).
+## Features
+
+- **Fast linting**: lints Python buffers on the fly through ruff, an extremely fast linter written in Rust.
+- **Notebook support**: lints `.py` files and Jupyter notebooks (`.ipynb`); in notebook mode each code cell is linted individually and messages are mapped to the correct cell via [jove-view](https://github.com/lumine-code/jove-view).
+- **Autofix**: attempts to automatically fix lint violations for fixable rules.
+- **Formatting**: formats the whole editor or only the selected text through `ruff format`.
+- **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
+- **Severity mapping**: classifies rule codes as error, warning or info via package settings.
+- **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
 
 ## Installation
 
-To install `linter-ruff` search for [linter-ruff](https://web.pulsar-edit.dev/packages/linter-ruff) in the Install pane of the Pulsar settings or run `ppm install linter-ruff`. Alternatively, you can run `ppm install asiloisad/pulsar-linter-ruff` to install a package directly from the GitHub repository.
+To install `linter-ruff` search for _linter-ruff_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/linter-ruff`.
+
+For command line use, ruff is installed with `pip install ruff`. Ruff supports over 800 lint [rules](https://docs.astral.sh/ruff/rules/), many of which are inspired by popular tools like Flake8, isort and pyupgrade.
 
 ## Commands
 
@@ -24,15 +34,12 @@ Commands available in `atom-text-editor[data-grammar="source python"]:not([mini]
 - `linter-ruff:format-editor`: format text of current text-editor,
 - `linter-ruff:format-selected`: format selections of current text-editor.
 
-## ruff
+## Services
 
-A package ruff is an extremely fast Python linter, written in Rust. Ruff can be used to replace Flake8 (plus dozens of plugins), isort, pydocstyle, yesqa, eradicate, pyupgrade, and autoflake, all while executing tens or hundreds of times faster than any individual tool.
-
-For command line use, ruff is installed with `pip install ruff`.
-
-Ruff supports over 800 lint [rules](https://docs.astral.sh/ruff/rules/), many of which are inspired by popular tools like Flake8, isort, pyupgrade, and others. Regardless of the rule's origin, Ruff re-implements every rule in Rust as a first-party feature.
-
-Ruff can attempt to automatically fix lint violations. List of rule codes to treat as eligible & ineligible can be set in package setting or in configuration file.
+- **linter** (`2.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
+- **linter-indie** (`2.0.0`): consumed to report project-wide scan results through an indie linter delegate.
+- **atom-ide-busy-signal** (`0.1.0`): consumed to show a busy message while project scans are running.
+- **tree-view** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 
 ## Contributing
 
