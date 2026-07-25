@@ -7,7 +7,7 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 ## Features
 
 - **Fast linting**: lints Python buffers on the fly through ruff, an extremely fast linter written in Rust.
-- **Notebook support**: lints `.py` files and Jupyter notebooks (`.ipynb`); in notebook mode each code cell is linted individually and messages are mapped to the correct cell via [jove-view](https://github.com/lumine-code/jove-view).
+- **Notebook support**: lints `.py` files and Jupyter notebooks (`.ipynb`); in notebook mode each code cell is linted individually and messages are mapped to the correct cell via [jupyter-view](https://github.com/lumine-code/jupyter-view).
 - **Autofix**: attempts to automatically fix lint violations for fixable rules.
 - **Formatting**: formats the whole editor or only the selected text through `ruff format`.
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.

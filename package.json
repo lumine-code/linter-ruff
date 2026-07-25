@@ -29,7 +29,7 @@
   },
   "activationHooks": [
     "language-python:grammar-used",
-    "jove-view:grammar-used",
+    "jupyter-view:grammar-used",
     "source.jupyter:root-scope-used"
   ],
   "activationCommands": {
