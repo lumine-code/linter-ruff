@@ -20,7 +20,7 @@
     "pylint",
     "numpy"
   ],
-  "version": "2.0.0",
+  "version": "1.0.0",
   "license": "MIT",
   "engines": {
     "atom": ">=1.100.0 <2.0.0"
@@ -49,12 +49,12 @@
   "consumedServices": {
     "linter-indie": {
       "versions": {
-        "2.0.0": "consumeIndie"
+        "^1.0.0": "consumeIndie"
       }
     },
     "atom-ide-busy-signal": {
       "versions": {
-        "0.1.0": "consumeBusySignal"
+        "^1.0.0": "consumeBusySignal"
       }
     },
     "tree-view": {
@@ -66,7 +66,7 @@
   "providedServices": {
     "linter": {
       "versions": {
-        "2.0.0": "provideLinter"
+        "1.0.0": "provideLinter"
       }
     }
   },
