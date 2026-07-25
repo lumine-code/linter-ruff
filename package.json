@@ -7,18 +7,13 @@
     "url": "https://github.com/lumine-code/linter-ruff/issues"
   },
   "keywords": [
-    "linter",
     "python",
-    "ruff",
+    "flake8",
+    "isort",
     "pyflakes",
     "pycodestyle",
-    "mccabe",
-    "isort",
     "pep8",
-    "pyupgrade",
-    "flake8",
-    "pylint",
-    "numpy"
+    "formatter"
   ],
   "version": "1.0.0",
   "license": "MIT",
