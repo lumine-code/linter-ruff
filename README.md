@@ -38,8 +38,8 @@ Commands available in `atom-text-editor[data-grammar="source python"]:not([mini]
 
 ## Services
 
-- **linter** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
-- **linter-indie** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
+- **linter.provider** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
+- **linter.registry** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
 - **busy-signal.reporter** (`^1.0.0`): consumed to show a busy message while project scans are running.
 - **tree-view** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 
