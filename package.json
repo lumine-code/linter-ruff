@@ -47,9 +47,9 @@
         "^1.0.0": "consumeLinterRegistry"
       }
     },
-    "busy-signal.reporter": {
+    "busy-signal": {
       "versions": {
-        "^1.0.0": "consumeBusySignalReporter"
+        "^1.0.0": "consumeBusySignal"
       }
     },
     "tree-view.selection": {
