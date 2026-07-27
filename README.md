@@ -38,10 +38,10 @@ Commands available in `atom-text-editor[data-grammar="source python"]:not([mini]
 
 ## Services
 
-- **[linter.provider](https://lumine-code.github.io/docs.html#services/linter.provider)** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
-- **[linter.registry](https://lumine-code.github.io/docs.html#services/linter.registry)** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
-- **[busy-signal](https://lumine-code.github.io/docs.html#services/busy-signal)** (`^1.0.0`): consumed to show a busy message while project scans are running.
-- **[tree-view.selection](https://lumine-code.github.io/docs.html#services/tree-view.selection)** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
+- **linter.provider** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
+- **linter.registry** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
+- **busy-signal** (`^1.0.0`): consumed to show a busy message while project scans are running.
+- **tree-view.selection** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 
 ## Contributing
 
