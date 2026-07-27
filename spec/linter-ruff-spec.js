@@ -107,6 +107,42 @@ describe("linter-ruff", () => {
       expect(messages[0].excerpt).toBe("F401: `os` imported but unused");
     });
 
+    it("classifies codes listed in the hint class as hints", async () => {
+      atom.config.set("linter-ruff.hint", ["F4"]);
+      fakeRuff({
+        items: [
+          {
+            code: "F401",
+            message: "`os` imported but unused",
+            location: { row: 2, column: 1 },
+            end_location: { row: 2, column: 10 },
+          },
+        ],
+      });
+
+      const messages = await mainModule.provideLinter().lint(editor);
+      expect(messages[0].severity).toBe("hint");
+      expect(messages[0].excerpt).toBe("F401: `os` imported but unused");
+    });
+
+    it("prefers info over hint when a code matches both classes", async () => {
+      atom.config.set("linter-ruff.info", ["F4"]);
+      atom.config.set("linter-ruff.hint", ["F401"]);
+      fakeRuff({
+        items: [
+          {
+            code: "F401",
+            message: "`os` imported but unused",
+            location: { row: 2, column: 1 },
+            end_location: { row: 2, column: 10 },
+          },
+        ],
+      });
+
+      const messages = await mainModule.provideLinter().lint(editor);
+      expect(messages[0].severity).toBe("info");
+    });
+
     it("resolves an empty list when the linter state is disabled", async () => {
       atom.config.set("linter-ruff.state", false);
       const calls = fakeRuff();

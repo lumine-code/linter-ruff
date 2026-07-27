@@ -11,7 +11,7 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 - **Autofix**: attempts to automatically fix lint violations for fixable rules.
 - **Formatting**: formats the whole editor or only the selected text through `ruff format`.
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
-- **Severity mapping**: classifies rule codes as error, warning or info via package settings.
+- **Severity mapping**: classifies rule codes as error, warning, info or hint via package settings.
 - **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
 
 ## Installation

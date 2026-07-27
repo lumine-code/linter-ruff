@@ -190,6 +190,15 @@
       },
       "default": []
     },
+    "hint": {
+      "title": "Severity selection: Hint",
+      "description": "Comma-separated list of rule codes to treat as hint type.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "useNoqa": {
       "title": "Use noqa flag",
       "description": "Flag `# noqa` is used to silent linter messages per line.",
