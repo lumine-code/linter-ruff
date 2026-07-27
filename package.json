@@ -22,7 +22,7 @@
   },
   "main": "./lib/main",
   "scripts": {
-    "test": "cd ../lumine && npm run test:only -- ../linter-ruff/spec",
+    "test": "cd ../../lumine && npm run test:only -- ../pkg_lumine/linter-ruff/spec",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
