@@ -171,6 +171,42 @@ describe("linter-ruff", () => {
     });
   });
 
+  describe("background tips", () => {
+    const tips = require("../package.json").backgroundTips;
+
+    it("declares them where the convention puts them", () => {
+      const keys = Object.keys(require("../package.json"));
+      expect(keys[keys.indexOf("engines") + 1]).toBe("backgroundTips");
+      expect(tips.length).toBeGreaterThan(0);
+      expect(tips.length).toBeLessThan(4);
+    });
+
+    it("points only at commands this package registers", () => {
+      // A tip naming a command that does not exist renders to nothing and is
+      // dropped, which is invisible from here without asking the registry.
+      const registered = new Set(
+        atom.commands
+          .findCommands({ target: workspaceElement })
+          .map(({ name }) => name)
+          .filter((name) => name.startsWith("linter-ruff:")),
+      );
+      const named = tips.flatMap((tip) => [...tip.matchAll(/linter-ruff:[a-z-]+/g)].flat());
+      expect(named.length).toBeGreaterThan(0);
+      for (const command of new Set(named)) expect(registered.has(command)).toBe(true);
+    });
+
+    it("keeps a branch for the keystroke nothing binds", () => {
+      // This package ships no keymap, so a tip that stated a keystroke outright
+      // would never be shown. Every `keys[...]` test needs its prose fallback.
+      for (const tip of tips) {
+        const branches = (tip.match(/{% if /g) || []).length;
+        expect((tip.match(/{% endif %}/g) || []).length).toBe(branches);
+        expect((tip.match(/{% else %}/g) || []).length).toBe(branches);
+        if (!branches) expect(tip).not.toContain("keystroke");
+      }
+    });
+  });
+
   describe("coexistence with ide-ruff", () => {
     let editor, registration;
 

@@ -20,6 +20,10 @@
   "engines": {
     "lumine": "^1.0.0"
   },
+  "backgroundTips": [
+    "{% if keys['linter-ruff:lint-projects'] %}You can lint every Python file in the project, not only the ones you have open, with {{ 'linter-ruff:lint-projects' | keystroke }}{% else %}You can lint every Python file in the project, not only the ones you have open.{% endif %}",
+    "You can lint a Jupyter notebook like any other file, with every message landing in the cell it came from."
+  ],
   "main": "./lib/main",
   "files": [
     "lib",
