@@ -21,6 +21,11 @@
     "lumine": "^1.0.0"
   },
   "main": "./lib/main",
+  "files": [
+    "lib",
+    "menus",
+    "spec"
+  ],
   "scripts": {
     "test": "lumine --test spec",
     "lint": "eslint . --max-warnings 0",
