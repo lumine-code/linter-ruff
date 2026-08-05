@@ -52,6 +52,11 @@
         "^1.0.0": "consumeLinterRegistry"
       }
     },
+    "ide-client": {
+      "versions": {
+        "^1.0.0": "consumeIdeClient"
+      }
+    },
     "busy-signal": {
       "versions": {
         "^1.0.0": "consumeBusySignal"

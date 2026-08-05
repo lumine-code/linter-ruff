@@ -13,6 +13,7 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
 - **Severity mapping**: classifies rule codes as error, warning, info or hint via package settings.
 - **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
+- **Server aware**: reports nothing for editors the ide-ruff language server already covers, so the two can be installed together.
 
 ## Installation
 
@@ -36,10 +37,15 @@ Commands available in `atom-text-editor[data-grammar="source python"]:not([mini]
 - `linter-ruff:format-editor`: format text of current text-editor,
 - `linter-ruff:format-selected`: format selections of current text-editor.
 
+## Usage
+
+`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor, this package reports nothing there rather than doubling every message; it keeps Jupyter notebooks, which the language server does not read, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Nothing has to be configured, and neither package needs disabling.
+
 ## Services
 
 - **linter.provider** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
 - **linter.registry** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
+- **ide-client** (`^1.0.0`): consumed to see which editors a language-server adapter already covers, and to hear when that changes.
 - **busy-signal** (`^1.0.0`): consumed to show a busy message while project scans are running.
 - **tree-view.selection** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 

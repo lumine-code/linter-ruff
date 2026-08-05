@@ -1,4 +1,5 @@
 const path = require("path");
+const { Disposable } = require("atom");
 
 describe("linter-ruff", () => {
   let mainModule, workspaceElement;
@@ -167,6 +168,118 @@ describe("linter-ruff", () => {
       expect(messages).toEqual([]);
       const notifications = atom.notifications.getNotifications();
       expect(notifications.some((n) => n.getMessage().includes("not found"))).toBe(true);
+    });
+  });
+
+  describe("coexistence with ide-ruff", () => {
+    let editor, registration;
+
+    // The half of the ide-client service this package uses. `adaptersForEditor`
+    // reports registrations, so it answers for an editor no server has reached.
+    function fakeIdeClient(adaptersByScope = {}) {
+      const listeners = new Set();
+      return {
+        adaptersForEditor: (textEditor) => adaptersByScope[textEditor.getGrammar().scopeName] || [],
+        onDidChangeAdapters(callback) {
+          listeners.add(callback);
+          return new Disposable(() => listeners.delete(callback));
+        },
+        emitChange(event) {
+          for (const callback of listeners) callback(event);
+        },
+      };
+    }
+
+    beforeEach(async () => {
+      editor = await atom.workspace.open(path.join(__dirname, "fixtures", "sample.py"));
+    });
+
+    afterEach(() => {
+      registration?.dispose();
+      registration = null;
+    });
+
+    it("reports nothing for an editor the ide-ruff adapter covers", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff({
+        items: [
+          {
+            code: "F401",
+            message: "`os` imported but unused",
+            location: { row: 2, column: 1 },
+            end_location: { row: 2, column: 10 },
+          },
+        ],
+      });
+
+      // An empty list, not `undefined`: the linter keeps the last messages a
+      // provider gave it when a lint resolves with nothing.
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(0);
+    });
+
+    it("keeps linting when the adapters covering the editor are other packages", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-pyright" }] }),
+      );
+      const calls = fakeRuff();
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+    });
+
+    it("keeps linting the scopes ide-ruff does not serve", async () => {
+      // The notebook's own buffer among them: ide-ruff declares the Python
+      // scopes, and the mapping of ruff's cell diagnostics onto notebook cells
+      // has no language-server equivalent.
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+      // What jupyter-view hands the linter: the notebook's source buffer, file
+      // backed and carrying the notebook grammar.
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+    });
+
+    it("still fixes on request, which is this package being asked for by name", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+
+      await mainModule.lint(editor, true);
+      expect(calls.length).toBe(1);
+      expect(calls[0].args).toContain("--fix-only");
+    });
+
+    it("asks for another pass when the set of adapters changes", () => {
+      const ideClient = fakeIdeClient();
+      registration = mainModule.consumeIdeClient(ideClient);
+      // The duplicate that is already on screen: this package linted the file
+      // before ide-ruff activated, and nothing would ask it again.
+      const lints = [];
+      const command = atom.commands.add(workspaceElement, "linter:lint", () => lints.push(true));
+
+      ideClient.emitChange({ adapter: { id: "ide-ruff" }, registered: true });
+      expect(lints.length).toBe(1);
+      command.dispose();
+    });
+
+    it("takes the editors back when ide-client goes away", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
+      );
+      registration.dispose();
+      registration = null;
+      const calls = fakeRuff();
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
     });
   });
 
