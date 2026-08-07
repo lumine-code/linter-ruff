@@ -47,7 +47,10 @@
       "linter-ruff:toggle-noqa",
       "linter-ruff:lint-projects",
       "linter-ruff:lint-selected",
-      "linter-ruff:global-pyproject"
+      "linter-ruff:global-pyproject",
+      "linter-ruff:fix-all",
+      "linter-ruff:format-editor",
+      "linter-ruff:format-selected"
     ]
   },
   "consumedServices": {

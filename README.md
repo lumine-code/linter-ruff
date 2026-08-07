@@ -29,13 +29,13 @@ Commands available in `atom-workspace`:
 - `linter-ruff:toggle-noqa`: toggle config of noqa setting,
 - `linter-ruff:lint-projects`: scan entire project for lint issues,
 - `linter-ruff:lint-selected`: scan selected tree-view files or folders for lint issues,
-- `linter-ruff:global-pyproject`: open ruff global config file.
-
-Commands available in `atom-text-editor[data-grammar="source python"]:not([mini])`:
-
+- `linter-ruff:global-pyproject`: open ruff global config file,
 - `linter-ruff:fix-all`: attempt to fix violations,
 - `linter-ruff:format-editor`: format text of current text-editor,
 - `linter-ruff:format-selected`: format selections of current text-editor.
+
+The last three act on the active editor and decline with a notification when
+its grammar is not Python.
 
 ## Usage
 
