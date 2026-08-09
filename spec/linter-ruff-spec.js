@@ -1,5 +1,5 @@
 const path = require("path");
-const { Disposable } = require("atom");
+const { Disposable } = require("lumine");
 
 describe("linter-ruff", () => {
   let mainModule, workspaceElement;
@@ -23,14 +23,14 @@ describe("linter-ruff", () => {
   }
 
   beforeEach(async () => {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
 
-    await atom.packages.activatePackage("language-python");
+    await lumine.packages.activatePackage("language-python");
 
     // The package defers activation until one of its commands is dispatched.
-    const activation = atom.packages.activatePackage("linter-ruff");
-    atom.commands.dispatch(workspaceElement, "linter-ruff:lint-projects");
+    const activation = lumine.packages.activatePackage("linter-ruff");
+    lumine.commands.dispatch(workspaceElement, "linter-ruff:lint-projects");
     mainModule = (await activation).mainModule;
   });
 
@@ -54,7 +54,7 @@ describe("linter-ruff", () => {
     let editor;
 
     beforeEach(async () => {
-      editor = await atom.workspace.open(path.join(__dirname, "fixtures", "sample.py"));
+      editor = await lumine.workspace.open(path.join(__dirname, "fixtures", "sample.py"));
       expect(editor.getGrammar().scopeName).toBe("source.python");
     });
 
@@ -91,7 +91,7 @@ describe("linter-ruff", () => {
     });
 
     it("applies the configured severity classes without a star", async () => {
-      atom.config.set("linter-ruff.warning", ["F4"]);
+      lumine.config.set("linter-ruff.warning", ["F4"]);
       fakeRuff({
         items: [
           {
@@ -109,7 +109,7 @@ describe("linter-ruff", () => {
     });
 
     it("classifies codes listed in the hint class as hints", async () => {
-      atom.config.set("linter-ruff.hint", ["F4"]);
+      lumine.config.set("linter-ruff.hint", ["F4"]);
       fakeRuff({
         items: [
           {
@@ -127,8 +127,8 @@ describe("linter-ruff", () => {
     });
 
     it("prefers info over hint when a code matches both classes", async () => {
-      atom.config.set("linter-ruff.info", ["F4"]);
-      atom.config.set("linter-ruff.hint", ["F401"]);
+      lumine.config.set("linter-ruff.info", ["F4"]);
+      lumine.config.set("linter-ruff.hint", ["F401"]);
       fakeRuff({
         items: [
           {
@@ -145,7 +145,7 @@ describe("linter-ruff", () => {
     });
 
     it("resolves an empty list when the linter state is disabled", async () => {
-      atom.config.set("linter-ruff.state", false);
+      lumine.config.set("linter-ruff.state", false);
       const calls = fakeRuff();
       const messages = await mainModule.provideLinter().lint(editor);
       expect(messages).toEqual([]);
@@ -153,7 +153,7 @@ describe("linter-ruff", () => {
     });
 
     it("skips editors whose grammar is not supported", async () => {
-      const textEditor = await atom.workspace.open();
+      const textEditor = await lumine.workspace.open();
       const calls = fakeRuff();
       expect(mainModule.provideLinter().lint(textEditor)).toBeUndefined();
       expect(calls.length).toBe(0);
@@ -166,7 +166,7 @@ describe("linter-ruff", () => {
 
       const messages = await mainModule.provideLinter().lint(editor);
       expect(messages).toEqual([]);
-      const notifications = atom.notifications.getNotifications();
+      const notifications = lumine.notifications.getNotifications();
       expect(notifications.some((n) => n.getMessage().includes("not found"))).toBe(true);
     });
   });
@@ -185,7 +185,7 @@ describe("linter-ruff", () => {
       // A tip naming a command that does not exist renders to nothing and is
       // dropped, which is invisible from here without asking the registry.
       const registered = new Set(
-        atom.commands
+        lumine.commands
           .findCommands({ target: workspaceElement })
           .map(({ name }) => name)
           .filter((name) => name.startsWith("linter-ruff:")),
@@ -227,7 +227,7 @@ describe("linter-ruff", () => {
     }
 
     beforeEach(async () => {
-      editor = await atom.workspace.open(path.join(__dirname, "fixtures", "sample.py"));
+      editor = await lumine.workspace.open(path.join(__dirname, "fixtures", "sample.py"));
     });
 
     afterEach(() => {
@@ -299,7 +299,7 @@ describe("linter-ruff", () => {
       // The duplicate that is already on screen: this package linted the file
       // before ide-ruff activated, and nothing would ask it again.
       const lints = [];
-      const command = atom.commands.add(workspaceElement, "linter:lint", () => lints.push(true));
+      const command = lumine.commands.add(workspaceElement, "linter:lint", () => lints.push(true));
 
       ideClient.emitChange({ adapter: { id: "ide-ruff" }, registered: true });
       expect(lints.length).toBe(1);
@@ -345,17 +345,17 @@ describe("linter-ruff", () => {
 
   describe("commands", () => {
     it("toggles the linter state", () => {
-      expect(atom.config.get("linter-ruff.state")).toBe(true);
-      atom.commands.dispatch(workspaceElement, "linter-ruff:toggle-state");
-      expect(atom.config.get("linter-ruff.state")).toBe(false);
-      atom.commands.dispatch(workspaceElement, "linter-ruff:toggle-state");
-      expect(atom.config.get("linter-ruff.state")).toBe(true);
+      expect(lumine.config.get("linter-ruff.state")).toBe(true);
+      lumine.commands.dispatch(workspaceElement, "linter-ruff:toggle-state");
+      expect(lumine.config.get("linter-ruff.state")).toBe(false);
+      lumine.commands.dispatch(workspaceElement, "linter-ruff:toggle-state");
+      expect(lumine.config.get("linter-ruff.state")).toBe(true);
     });
 
     it("toggles the noqa setting", () => {
-      expect(atom.config.get("linter-ruff.useNoqa")).toBe(true);
-      atom.commands.dispatch(workspaceElement, "linter-ruff:toggle-noqa");
-      expect(atom.config.get("linter-ruff.useNoqa")).toBe(false);
+      expect(lumine.config.get("linter-ruff.useNoqa")).toBe(true);
+      lumine.commands.dispatch(workspaceElement, "linter-ruff:toggle-noqa");
+      expect(lumine.config.get("linter-ruff.useNoqa")).toBe(false);
     });
   });
 });

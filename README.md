@@ -23,7 +23,7 @@ For command line use, ruff is installed with `pip install ruff`. Ruff supports o
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `linter-ruff:toggle-state`: toggle config of linter state,
 - `linter-ruff:toggle-noqa`: toggle config of noqa setting,

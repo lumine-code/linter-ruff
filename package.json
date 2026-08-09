@@ -42,7 +42,7 @@
     "source.jupyter:root-scope-used"
   ],
   "activationCommands": {
-    "atom-workspace": [
+    "lumine-workspace": [
       "linter-ruff:toggle-state",
       "linter-ruff:toggle-noqa",
       "linter-ruff:lint-projects",
