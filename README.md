@@ -13,7 +13,7 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
 - **Severity mapping**: classifies rule codes as error, warning, info or hint via package settings.
 - **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
-- **Server aware**: reports nothing for editors the ide-ruff language server already covers, so the two can be installed together.
+- **Server aware**: reports nothing for editors where ide-ruff diagnostics are enabled, so the two can be installed together without duplicate messages.
 
 ## Installation
 
@@ -39,7 +39,7 @@ its grammar is not Python.
 
 ## Usage
 
-`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor, this package reports nothing there rather than doubling every message; it keeps Jupyter notebooks, which the language server does not read, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Nothing has to be configured, and neither package needs disabling.
+`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor with diagnostics enabled, this package reports nothing there rather than doubling every message; it keeps Jupyter notebooks, which the language server does not read, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Turning the adapter's diagnostics off immediately hands those open editors back to this linter.
 
 ## Services
 

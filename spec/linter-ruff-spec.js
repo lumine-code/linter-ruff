@@ -213,15 +213,23 @@ describe("linter-ruff", () => {
     // The half of the ide-client service this package uses. `adaptersForEditor`
     // reports registrations, so it answers for an editor no server has reached.
     function fakeIdeClient(adaptersByScope = {}) {
-      const listeners = new Set();
+      const adapterListeners = new Set();
+      const featureListeners = new Set();
       return {
         adaptersForEditor: (textEditor) => adaptersByScope[textEditor.getGrammar().scopeName] || [],
         onDidChangeAdapters(callback) {
-          listeners.add(callback);
-          return new Disposable(() => listeners.delete(callback));
+          adapterListeners.add(callback);
+          return new Disposable(() => adapterListeners.delete(callback));
+        },
+        onDidChangeFeatures(callback) {
+          featureListeners.add(callback);
+          return new Disposable(() => featureListeners.delete(callback));
         },
         emitChange(event) {
-          for (const callback of listeners) callback(event);
+          for (const callback of adapterListeners) callback(event);
+        },
+        emitFeatureChange(event) {
+          for (const callback of featureListeners) callback(event);
         },
       };
     }
@@ -266,6 +274,18 @@ describe("linter-ruff", () => {
       expect(calls.length).toBe(1);
     });
 
+    it("takes the editor back when ide-ruff diagnostics are disabled", async () => {
+      lumine.config.set("ide-ruff.features.diagnostics", false);
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+      lumine.config.set("ide-ruff.features.diagnostics", true);
+    });
+
     it("keeps linting the scopes ide-ruff does not serve", async () => {
       // The notebook's own buffer among them: ide-ruff declares the Python
       // scopes, and the mapping of ruff's cell diagnostics onto notebook cells
@@ -303,6 +323,19 @@ describe("linter-ruff", () => {
 
       ideClient.emitChange({ adapter: { id: "ide-ruff" }, registered: true });
       expect(lints.length).toBe(1);
+      command.dispose();
+    });
+
+    it("asks for another pass when ide-ruff feature ownership changes", () => {
+      const ideClient = fakeIdeClient();
+      registration = mainModule.consumeIdeClient(ideClient);
+      const lints = [];
+      const command = lumine.commands.add(workspaceElement, "linter:lint", () => lints.push(true));
+
+      ideClient.emitFeatureChange({ adapter: { id: "ide-pyright" } });
+      expect(lints).toEqual([]);
+      ideClient.emitFeatureChange({ adapter: { id: "ide-ruff" } });
+      expect(lints).toEqual([true]);
       command.dispose();
     });
 
