@@ -90,6 +90,35 @@ describe("linter-ruff", () => {
       expect(calls[0].stdin).toContain("import os");
     });
 
+    it("carries ruff's cell number for a notebook diagnostic", async () => {
+      // What jupyter-view hands the linter: the notebook's shared source
+      // buffer. Its cells belong to the split views, so the message names the
+      // cell and no buffer.
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+      fakeRuff({
+        items: [
+          {
+            code: "F401",
+            message: "`os` imported but unused",
+            cell: 3,
+            location: { row: 2, column: 1 },
+            end_location: { row: 2, column: 10 },
+          },
+        ],
+      });
+
+      const messages = await mainModule.provideLinter().lint(editor);
+
+      expect(messages.length).toBe(1);
+      expect(messages[0].location.cell).toBe(3);
+      expect("buffer" in messages[0].location).toBe(false);
+      // Notebook text goes to ruff untouched, so no stub line offsets the rows.
+      expect(messages[0].location.position).toEqual([
+        [1, 0],
+        [1, 9],
+      ]);
+    });
+
     it("applies the configured severity classes without a star", async () => {
       lumine.config.set("linter-ruff.warning", ["F4"]);
       fakeRuff({
