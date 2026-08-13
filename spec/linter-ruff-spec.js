@@ -361,6 +361,27 @@ describe("linter-ruff", () => {
       lumine.config.set("ide-ruff.features.diagnostics", true);
     });
 
+    it("reads the diagnostics switch at the python cell scope for a notebook", async () => {
+      // ide-client gates its publishes with the cell editors' scope; a scoped
+      // toggle has to land on the same scope here, not on the hidden source
+      // editor's `source.jupyter`, or the two routes desync and the notebook
+      // ends up with no diagnostics from either.
+      lumine.config.set("ide-ruff.features.diagnostics", false, {
+        scopeSelector: ".source.python.ipy",
+      });
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+      lumine.config.unset("ide-ruff.features.diagnostics", {
+        scopeSelector: ".source.python.ipy",
+      });
+    });
+
     it("ignores a notebook bridge served only by other adapters", async () => {
       registration = mainModule.consumeIdeClient(
         fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-pyright" }] }),
