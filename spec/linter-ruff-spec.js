@@ -322,7 +322,7 @@ describe("linter-ruff", () => {
 
     it("keeps linting a notebook the language servers do not cover", async () => {
       // ide-ruff registered, but the hub reports no bridge for this notebook —
-      // ide-jupyter absent, or a ruff without notebook sync. An ide-client too
+      // no bridge open, or a ruff without notebook sync. An ide-client too
       // old to answer the question at all reads the same way, through the
       // optional chain.
       registration = mainModule.consumeIdeClient(

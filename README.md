@@ -39,7 +39,7 @@ its grammar is not Python.
 
 ## Usage
 
-`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor with diagnostics enabled, this package reports nothing there rather than doubling every message — Jupyter notebooks included, once [ide-jupyter](https://github.com/lumine-code/ide-jupyter) syncs them to the server; it keeps notebooks the servers do not cover, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Turning the adapter's diagnostics off immediately hands those open editors back to this linter.
+`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor with diagnostics enabled, this package reports nothing there rather than doubling every message — Jupyter notebooks included, once jupyter-view syncs them to the server; it keeps notebooks the servers do not cover, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Turning the adapter's diagnostics off immediately hands those open editors back to this linter.
 
 ## Services
 
