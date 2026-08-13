@@ -240,12 +240,17 @@ describe("linter-ruff", () => {
     let editor, registration;
 
     // The half of the ide-client service this package uses. `adaptersForEditor`
-    // reports registrations, so it answers for an editor no server has reached.
-    function fakeIdeClient(adaptersByScope = {}) {
+    // reports registrations, so it answers for an editor no server has reached;
+    // `adaptersForNotebook` answers the notebook-shaped question — the adapters
+    // serving an OPEN notebook bridge.
+    function fakeIdeClient(adaptersByScope = {}, adaptersByNotebook = null) {
       const adapterListeners = new Set();
       const featureListeners = new Set();
       return {
         adaptersForEditor: (textEditor) => adaptersByScope[textEditor.getGrammar().scopeName] || [],
+        ...(adaptersByNotebook
+          ? { adaptersForNotebook: (filePath) => adaptersByNotebook[filePath] || [] }
+          : {}),
         onDidChangeAdapters(callback) {
           adapterListeners.add(callback);
           return new Disposable(() => adapterListeners.delete(callback));
@@ -315,16 +320,52 @@ describe("linter-ruff", () => {
       lumine.config.set("ide-ruff.features.diagnostics", true);
     });
 
-    it("keeps linting the scopes ide-ruff does not serve", async () => {
-      // The notebook's own buffer among them: ide-ruff declares the Python
-      // scopes, and the mapping of ruff's cell diagnostics onto notebook cells
-      // has no language-server equivalent.
+    it("keeps linting a notebook the language servers do not cover", async () => {
+      // ide-ruff registered, but the hub reports no bridge for this notebook —
+      // ide-jupyter absent, or a ruff without notebook sync. An ide-client too
+      // old to answer the question at all reads the same way, through the
+      // optional chain.
       registration = mainModule.consumeIdeClient(
         fakeIdeClient({ "source.python": [{ id: "ide-ruff" }] }),
       );
       const calls = fakeRuff();
       // What jupyter-view hands the linter: the notebook's source buffer, file
       // backed and carrying the notebook grammar.
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+    });
+
+    it("stands down for a notebook the ide-ruff server syncs", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(0);
+    });
+
+    it("takes a notebook back when ide-ruff diagnostics are disabled", async () => {
+      lumine.config.set("ide-ruff.features.diagnostics", false);
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-ruff" }] }),
+      );
+      const calls = fakeRuff();
+      spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
+
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+      lumine.config.set("ide-ruff.features.diagnostics", true);
+    });
+
+    it("ignores a notebook bridge served only by other adapters", async () => {
+      registration = mainModule.consumeIdeClient(
+        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-pyright" }] }),
+      );
+      const calls = fakeRuff();
       spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
 
       expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
