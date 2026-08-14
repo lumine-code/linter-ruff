@@ -17,7 +17,7 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 
 ## Installation
 
-To install `linter-ruff` search for _linter-ruff_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/linter-ruff`.
+To install `linter-ruff` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/linter-ruff`.
 
 For command line use, ruff is installed with `pip install ruff`. Ruff supports over 800 lint [rules](https://docs.astral.sh/ruff/rules/), many of which are inspired by popular tools like Flake8, isort and pyupgrade.
 
@@ -34,8 +34,7 @@ Commands available in `lumine-workspace`:
 - `linter-ruff:format-editor`: format text of current text-editor,
 - `linter-ruff:format-selected`: format selections of current text-editor.
 
-The last three act on the active editor and decline with a notification when
-its grammar is not Python.
+The last three act on the active editor and decline with a notification when its grammar is not Python.
 
 ## Usage
 
@@ -43,11 +42,11 @@ its grammar is not Python.
 
 ## Services
 
-- **linter.provider** (`1.0.0`): provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
-- **linter.registry** (`^1.0.0`): consumed to report project-wide scan results through an indie linter delegate.
-- **ide-client** (`^1.0.0`): consumed to see which editors a language-server adapter already covers, and to hear when that changes.
-- **busy-signal** (`^1.0.0`): consumed to show a busy message while project scans are running.
-- **tree-view.selection** (`^1.0.0`): consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
+- `linter.provider`: provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
+- `linter.registry`: consumed to report project-wide scan results through an indie linter delegate.
+- `ide-client`: consumed to see which editors a language-server adapter already covers, and to hear when that changes.
+- `busy-signal`: consumed to show a busy message while project scans are running.
+- `tree-view.selection`: consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 
 ## Contributing
 
