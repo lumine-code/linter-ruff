@@ -46,7 +46,13 @@ describe("linter-ruff", () => {
       expect(provider.lintsOnChange).toBe(true);
       expect(Array.isArray(provider.grammarScopes)).toBe(true);
       expect(provider.grammarScopes).toContain("source.python");
+      expect(provider.grammarScopes).toContain("source.python.ipy");
       expect(typeof provider.lint).toBe("function");
+    });
+
+    it("activates for the standalone IPython grammar package", () => {
+      const { activationHooks } = require("../package.json");
+      expect(activationHooks).toContain("language-ipython:grammar-used");
     });
   });
 

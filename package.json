@@ -38,6 +38,7 @@
   },
   "activationHooks": [
     "language-python:grammar-used",
+    "language-ipython:grammar-used",
     "jupyter-view:grammar-used",
     "source.jupyter:root-scope-used"
   ],
