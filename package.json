@@ -36,24 +36,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "activationHooks": [
-    "language-python:grammar-used",
-    "language-ipython:grammar-used",
-    "jupyter-view:grammar-used",
-    "source.jupyter:root-scope-used"
-  ],
-  "activationCommands": {
-    "lumine-workspace": [
-      "linter-ruff:toggle-state",
-      "linter-ruff:toggle-noqa",
-      "linter-ruff:lint-projects",
-      "linter-ruff:lint-selected",
-      "linter-ruff:global-pyproject",
-      "linter-ruff:fix-all",
-      "linter-ruff:format-editor",
-      "linter-ruff:format-selected"
-    ]
-  },
   "consumedServices": {
     "linter.registry": {
       "versions": {

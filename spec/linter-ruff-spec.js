@@ -28,10 +28,8 @@ describe("linter-ruff", () => {
 
     await lumine.packages.activatePackage("language-python");
 
-    // The package defers activation until one of its commands is dispatched.
-    const activation = lumine.packages.activatePackage("linter-ruff");
-    lumine.commands.dispatch(workspaceElement, "linter-ruff:lint-projects");
-    mainModule = (await activation).mainModule;
+    await lumine.packages.startPackage("linter-ruff");
+    mainModule = lumine.packages.getLoadedPackage("linter-ruff").mainModule;
   });
 
   afterEach(() => {
@@ -49,10 +47,24 @@ describe("linter-ruff", () => {
       expect(provider.grammarScopes).toContain("source.python.ipy");
       expect(typeof provider.lint).toBe("function");
     });
+  });
 
-    it("activates for the standalone IPython grammar package", () => {
-      const { activationHooks } = require("../package.json");
-      expect(activationHooks).toContain("language-ipython:grammar-used");
+  describe("service lifecycle", () => {
+    it("disposes the indie delegate when linter.registry disappears", () => {
+      const delegate = { dispose: jasmine.createSpy("dispose") };
+      const registration = mainModule.consumeLinterRegistry(() => delegate);
+
+      registration.dispose();
+      expect(delegate.dispose).toHaveBeenCalled();
+      expect(require("../lib/indie").indieDelegate).toBeNull();
+    });
+
+    it("forgets busy-signal when its edge disappears", () => {
+      const signal = { create() {} };
+      const registration = mainModule.consumeBusySignal(signal);
+
+      registration.dispose();
+      expect(require("../lib/indie").busySignal).toBeNull();
     });
   });
 
