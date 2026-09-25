@@ -20,10 +20,6 @@
   "engines": {
     "lumine": "^1.0.0"
   },
-  "backgroundTips": [
-    "{% if keys['linter-ruff:lint-projects'] %}You can lint every Python file in the project, not only the ones you have open, with {{ 'linter-ruff:lint-projects' | keystroke }}{% else %}You can lint every Python file in the project, not only the ones you have open.{% endif %}",
-    "You can lint a Jupyter notebook like any other file, with every message landing in the cell it came from."
-  ],
   "main": "./lib/main",
   "files": [
     "lib",
@@ -35,6 +31,18 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
+  },
+  "providedServices": {
+    "linter.provider": {
+      "versions": {
+        "1.0.0": "provideLinter"
+      }
+    },
+    "background-tips.provider": {
+      "versions": {
+        "1.0.0": "provideBackgroundTips"
+      }
+    }
   },
   "consumedServices": {
     "linter.registry": {
@@ -55,13 +63,6 @@
     "tree-view.selection": {
       "versions": {
         "^1.0.0": "consumeTreeViewSelection"
-      }
-    }
-  },
-  "providedServices": {
-    "linter.provider": {
-      "versions": {
-        "1.0.0": "provideLinter"
       }
     }
   },

@@ -219,11 +219,14 @@ describe("linter-ruff", () => {
   });
 
   describe("background tips", () => {
-    const tips = require("../package.json").backgroundTips;
+    const contribution = require("../lib/main").provideBackgroundTips();
+    const tips = contribution.tips;
 
-    it("declares them where the convention puts them", () => {
-      const keys = Object.keys(require("../package.json"));
-      expect(keys[keys.indexOf("engines") + 1]).toBe("backgroundTips");
+    it("provides them through the package service", () => {
+      const versions =
+        require("../package.json").providedServices["background-tips.provider"].versions;
+      expect(versions["1.0.0"]).toBe("provideBackgroundTips");
+      expect(contribution.packageName).toBe("linter-ruff");
       expect(tips.length).toBeGreaterThan(0);
       expect(tips.length).toBeLessThan(4);
     });
