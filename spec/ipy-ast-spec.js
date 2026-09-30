@@ -96,7 +96,21 @@ describe("Ruff with the real IPython AST projection", () => {
       await fs.rm(directory, { recursive: true, force: true });
     }
   });
-  if (process.env.RUFF_PATH)
+
+  it("formats 1000 code cells with one CLI process and preserves all markers", async () => {
+    const source = Array.from(
+      { length: 1000 },
+      (_, index) => `# %% Cell ${index}\nvalue_${index}=1\n`,
+    ).join("");
+    editor.setText(source);
+    await editor.whenGrammarSettled();
+    fakeProcess((text) => text.replaceAll("=1", " = 1"));
+    await main.formatProjected(editor, true);
+    expect(calls.length).toBe(1);
+    expect(editor.getText()).toBe(source.replaceAll("=1", " = 1"));
+    expect(main.projectedTasks.size).toBe(0);
+  });
+  if (process.env.RUFF_PATH) {
     it("maps the real Ruff CLI's Unicode diagnostics without linting literal bodies", async () => {
       main.ruffExe = process.env.RUFF_PATH;
       const source = editor.getText();
@@ -111,4 +125,26 @@ describe("Ruff with the real IPython AST projection", () => {
       expect(editor.getText()).toBe(source);
       expect(main.projectedTasks.size).toBe(0);
     });
+
+    it("formats a complete batch with the real CLI using one process and retaining opaque bytes", async () => {
+      main.ruffExe = process.env.RUFF_PATH;
+      const source =
+        '# %% Documentation\n"""Module documentation."""\nfrom __future__ import annotations\nfirst=1\n# %% [raw]\nraw <😀>\n# %% Timed\n%%time -q\nvalue=1\n%pwd\n# %% Final\nlast=2\n';
+      editor.setText(source);
+      await editor.whenGrammarSettled();
+      const processes = spyOn(main, "execFile").and.callThrough();
+      await main.formatProjected(editor, true);
+      const formatted = editor.getText();
+      expect(processes).toHaveBeenCalledTimes(1);
+      expect(formatted).toContain('"""Module documentation."""');
+      expect(formatted).toContain("from __future__ import annotations");
+      expect(formatted).toContain("first = 1");
+      expect(formatted).toContain("value = 1");
+      expect(formatted).toContain("last = 2");
+      expect(formatted).toContain("# %% [raw]\nraw <😀>\n# %% Timed\n%%time -q\n");
+      expect(formatted).toContain("%pwd\n");
+      expect(formatted).not.toContain("__lumine_ipy_batch_");
+      expect(main.projectedTasks.size).toBe(0);
+    });
+  }
 });

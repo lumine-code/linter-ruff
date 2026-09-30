@@ -22,7 +22,7 @@ describe("Ruff projected IPython input", () => {
 
   function snapshot(overrides = {}) {
     const source = editor.getText();
-    return {
+    const value = {
       source,
       text: "# %% [markdown]\n                 \n# %%\nvalue=1\n",
       isCurrent: () => !editor.isDestroyed() && editor.getText() === source,
@@ -32,6 +32,17 @@ describe("Ruff projected IPython input", () => {
       mapEdits: (edits) => edits,
       ...overrides,
     };
+    value.getFormattingBatch ??= async () => {
+      const blocks = await value.getFormattingBlocks();
+      return {
+        text: blocks[0].text,
+        restore(formatted) {
+          const text = blocks[0].restore(formatted);
+          return text === null ? null : [{ range: blocks[0].range, text }];
+        },
+      };
+    };
+    return value;
   }
   function provider(value) {
     const service = {
@@ -152,7 +163,7 @@ describe("Ruff projected IPython input", () => {
 
   it("formats only Python blocks and applies nothing if any restore is unsafe", async () => {
     const projection = snapshot({
-      getFormattingBlocks: () => [
+      getFormattingBlocks: async () => [
         { range: new Range([3, 0], [4, 0]), text: "value=1\n", restore: () => null },
       ],
     });
@@ -177,9 +188,42 @@ describe("Ruff projected IPython input", () => {
     expect(await fs.readFile(filePath, "utf8")).toBe("changed on disk");
   });
 
+  it("starts no formatter process when the selection changes during lazy block preparation", async () => {
+    let release, started;
+    const blocks = new Promise((resolve) => {
+      release = resolve;
+    });
+    const preparing = new Promise((resolve) => {
+      started = resolve;
+    });
+    const projection = snapshot({
+      getFormattingBlocks: () => {
+        started();
+        return blocks;
+      },
+    });
+    provider(projection);
+    editor.setSelectedBufferRange([
+      [3, 0],
+      [4, 0],
+    ]);
+    const calls = fakeRuff("value = 1\n");
+    const pending = main.formatProjected(editor, false);
+    await preparing;
+    editor.setSelectedBufferRange([
+      [0, 0],
+      [1, 0],
+    ]);
+    release([{ range: new Range([3, 0], [4, 0]), text: "value=1\n", restore: (text) => text }]);
+    await pending;
+    expect(calls.length).toBe(0);
+    expect(editor.getText()).toBe(projection.source);
+    expect(main.projectedTasks.size).toBe(0);
+  });
+
   it("keeps the invoking selection while awaiting the projection", async () => {
     const projection = snapshot({
-      getFormattingBlocks: () => [
+      getFormattingBlocks: async () => [
         { range: new Range([3, 0], [4, 0]), text: "value=1\n", restore: (text) => text },
       ],
     });
