@@ -382,13 +382,13 @@ describe("linter-ruff", () => {
       lumine.config.set("ide-ruff.features.diagnostics", true);
     });
 
-    it("reads the diagnostics switch at the python cell scope for a notebook", async () => {
+    it("reads the diagnostics switch at the original Python cell scope for a notebook", async () => {
       // ide-client gates its publishes with the cell editors' scope; a scoped
       // toggle has to land on the same scope here, not on the hidden source
       // editor's `source.jupyter`, or the two routes desync and the notebook
       // ends up with no diagnostics from either.
       lumine.config.set("ide-ruff.features.diagnostics", false, {
-        scopeSelector: ".source.python.ipy",
+        scopeSelector: ".source.python",
       });
       registration = mainModule.consumeIdeClient(
         fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-ruff" }] }),
@@ -398,6 +398,17 @@ describe("linter-ruff", () => {
 
       expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
       expect(calls.length).toBe(1);
+      lumine.config.set("ide-ruff.features.diagnostics", true, {
+        scopeSelector: ".source.python",
+      });
+      lumine.config.set("ide-ruff.features.diagnostics", false, {
+        scopeSelector: ".source.python.ipy",
+      });
+      expect(await mainModule.provideLinter().lint(editor)).toEqual([]);
+      expect(calls.length).toBe(1);
+      lumine.config.unset("ide-ruff.features.diagnostics", {
+        scopeSelector: ".source.python",
+      });
       lumine.config.unset("ide-ruff.features.diagnostics", {
         scopeSelector: ".source.python.ipy",
       });
