@@ -49,6 +49,7 @@ jobs:
     timeout-minutes: 60
     env:
       LUMINE_JASMINE_REPORTER: list
+      RUFF_VERSION: 0.16.6
     steps:
       - uses: actions/checkout@v6
         with:
@@ -57,6 +58,10 @@ jobs:
         with:
           repository: lumine-code/lumine
           path: lumine
+      - uses: actions/checkout@v6
+        with:
+          repository: lumine-code/language-ipython
+          path: language-ipython
       - uses: actions/setup-node@v6
         with:
           node-version-file: lumine/.nvmrc
@@ -76,6 +81,15 @@ jobs:
       - name: Install package dependencies
         working-directory: linter-ruff
         run: npm ci --ignore-scripts
+      - name: Install Ruff
+        working-directory: linter-ruff
+        run: |
+          curl -fsSLO "https://github.com/astral-sh/ruff/releases/download/${RUFF_VERSION}/ruff-x86_64-unknown-linux-gnu.tar.gz"
+          curl -fsSLO "https://github.com/astral-sh/ruff/releases/download/${RUFF_VERSION}/ruff-x86_64-unknown-linux-gnu.tar.gz.sha256"
+          sha256sum --check ruff-x86_64-unknown-linux-gnu.tar.gz.sha256
+          mkdir .server
+          tar -xzf ruff-x86_64-unknown-linux-gnu.tar.gz --strip-components=1 -C .server
+          echo "RUFF_PATH=$PWD/.server/ruff" >> "$GITHUB_ENV"
       - name: Install editor dependencies
         working-directory: lumine
         run: |

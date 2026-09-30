@@ -7,13 +7,17 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 ## Features
 
 - **Fast linting**: lints Python buffers on the fly through ruff, an extremely fast linter written in Rust.
-- **Notebook support**: lints `.py` files and Jupyter notebooks (`.ipynb`); in notebook mode each code cell is linted individually and messages are mapped to the correct cell via [jupyter-view](https://github.com/lumine-code/jupyter-view).
+- **Notebook support**: lints `.py`, mixed `.ipy` documents and Jupyter notebooks (`.ipynb`); notebook messages are mapped to the correct cell via [jupyter-view](https://github.com/lumine-code/jupyter-view).
 - **Autofix**: attempts to automatically fix lint violations for fixable rules.
 - **Formatting**: formats the whole editor or only the selected text through `ruff format`.
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
 - **Severity mapping**: classifies rule codes as error, warning, info or hint via package settings.
 - **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
 - **Server aware**: reports nothing for editors where ide-ruff diagnostics are enabled, so the two can be installed together without duplicate messages.
+
+Mixed `.ipy` documents use language-ipython's passive `ipython.source` AST projection. Only Python reaches Ruff; literal Markdown, raw content, foreign magic bodies and IPython syntax remain protected. Diagnostics map codepoint positions back to source UTF-16 coordinates. Fixes are applied as validated minimal edits, and formatting operates on safe Python blocks with protected content restored before applying anything. Missing projection services and stale results produce no unsafe fallback or changes.
+
+Project and tree-view scans discover `.ipy` paths through Ruff's configuration rules, exclude them from raw disk linting, and analyze them sequentially through the same projection. Open documents use their buffer snapshot; closed files use an ephemeral grammar model that is always disposed. A changed disk source is discarded before messages are published, and scans never rewrite closed files.
 
 ## Installation
 
@@ -45,6 +49,7 @@ The last three act on the active editor and decline with a notification when its
 - `linter.provider`: provided to the linter package; exposes the Ruff file linter with its name, grammar scopes and `lint` function.
 - `linter.registry`: consumed to report project-wide scan results through an indie linter delegate.
 - `ide-client`: consumed to see which editors a language-server adapter already covers, and to hear when that changes.
+- `ipython.source`: consumed for shared AST projection, coordinate maps and protected formatting blocks in `.ipy` documents.
 - `busy-signal`: consumed to show a busy message while project scans are running.
 - `tree-view.selection`: consumed to resolve the selected files or folders for `linter-ruff:lint-selected`.
 

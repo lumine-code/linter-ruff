@@ -45,6 +45,11 @@
     }
   },
   "consumedServices": {
+    "ipython.source": {
+      "versions": {
+        "^1.0.0": "consumeIpythonSource"
+      }
+    },
     "linter.registry": {
       "versions": {
         "^1.0.0": "consumeLinterRegistry"
