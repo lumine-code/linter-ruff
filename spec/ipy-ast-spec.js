@@ -105,10 +105,36 @@ describe("Ruff with the real IPython AST projection", () => {
     editor.setText(source);
     await editor.whenGrammarSettled();
     fakeProcess((text) => text.replaceAll("=1", " = 1"));
+    const nativeApply = spyOn(editor.getBuffer(), "setTextViaDiff").and.callThrough();
     await main.formatProjected(editor, true);
     expect(calls.length).toBe(1);
     expect(editor.getText()).toBe(source.replaceAll("=1", " = 1"));
     expect(main.projectedTasks.size).toBe(0);
+    expect(nativeApply).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves undo, selections and CRLF when applying a validated complete target", async () => {
+    const source = "# %% First\r\nvalue=1\r\n# %% [raw]\r\nraw <😀>\r\n# %% Last\r\nnext=2\r\n";
+    editor.setText(source);
+    await editor.whenGrammarSettled();
+    editor.getBuffer().clearUndoStack();
+    editor.setSelectedBufferRange([
+      [3, 0],
+      [3, 9],
+    ]);
+    const selected = editor.getSelectedText();
+    fakeProcess((text) => text.replace("value=1", "value = 1").replace("next=2", "next = 2"));
+    await main.formatProjected(editor, true);
+    expect(editor.getText()).toBe(
+      source.replace("value=1", "value = 1").replace("next=2", "next = 2"),
+    );
+    expect(editor.getSelectedText()).toBe(selected);
+    editor.undo();
+    expect(editor.getText()).toBe(source);
+    editor.redo();
+    expect(editor.getText()).toBe(
+      source.replace("value=1", "value = 1").replace("next=2", "next = 2"),
+    );
   });
   if (process.env.RUFF_PATH) {
     it("maps the real Ruff CLI's Unicode diagnostics without linting literal bodies", async () => {

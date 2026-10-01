@@ -40,6 +40,16 @@ describe("Ruff projected IPython input", () => {
           const text = blocks[0].restore(formatted);
           return text === null ? null : [{ range: blocks[0].range, text }];
         },
+        async getEditPlan(formatted) {
+          const text = blocks[0].restore(formatted);
+          return text === null
+            ? null
+            : {
+                text: source.replace(blocks[0].text, text),
+                edits: [{ oldRange: blocks[0].range, newText: text }],
+                fallback: false,
+              };
+        },
       };
     };
     return value;
@@ -217,6 +227,38 @@ describe("Ruff projected IPython input", () => {
     release([{ range: new Range([3, 0], [4, 0]), text: "value=1\n", restore: (text) => text }]);
     await pending;
     expect(calls.length).toBe(0);
+    expect(editor.getText()).toBe(projection.source);
+    expect(main.projectedTasks.size).toBe(0);
+  });
+
+  it("applies no target after cancellation during asynchronous edit planning", async () => {
+    let release, started;
+    const planned = new Promise((resolve) => {
+      release = resolve;
+    });
+    const preparing = new Promise((resolve) => {
+      started = resolve;
+    });
+    const projection = snapshot({
+      getFormattingBatch: async () => ({
+        text: "value=1\n",
+        getEditPlan() {
+          started();
+          return planned;
+        },
+      }),
+    });
+    provider(projection);
+    fakeRuff("value = 1\n");
+    const pending = main.formatProjected(editor, true);
+    await preparing;
+    main.projectedFormats.get(editor.getBuffer()).abort();
+    release({
+      text: projection.source.replace("value=1", "value = 1"),
+      edits: [],
+      fallback: false,
+    });
+    await pending;
     expect(editor.getText()).toBe(projection.source);
     expect(main.projectedTasks.size).toBe(0);
   });
