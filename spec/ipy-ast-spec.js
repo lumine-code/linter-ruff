@@ -105,12 +105,56 @@ describe("Ruff with the real IPython AST projection", () => {
     editor.setText(source);
     await editor.whenGrammarSettled();
     fakeProcess((text) => text.replaceAll("=1", " = 1"));
-    const nativeApply = spyOn(editor.getBuffer(), "setTextViaDiff").and.callThrough();
+    const nativeApply = spyOn(editor, "setText").and.callThrough();
     await main.formatProjected(editor, true);
     expect(calls.length).toBe(1);
     expect(editor.getText()).toBe(source.replaceAll("=1", " = 1"));
     expect(main.projectedTasks.size).toBe(0);
     expect(nativeApply).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips applying an unchanged pure Python formatter result", async () => {
+    editor.setText("# %%\nvalue = 1\n");
+    await editor.whenGrammarSettled();
+    fakeProcess((text) => text);
+    const apply = spyOn(editor, "setText").and.callThrough();
+    await main.formatProjected(editor, true);
+    expect(calls.length).toBe(1);
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it("translates multiple reversed selections and preserves one undo entry for pure Python", async () => {
+    const source = "#%% First\r\nvalue=1\r\n#%% Last\r\nnext=value\r\n";
+    editor.setText(source);
+    await editor.whenGrammarSettled();
+    editor.getBuffer().clearUndoStack();
+    editor.setSelectedBufferRanges([new Range([0, 0], [0, 9]), new Range([3, 5], [3, 10])]);
+    editor.getSelections()[1].setBufferRange(new Range([3, 5], [3, 10]), { reversed: true });
+    fakeProcess((text) =>
+      text.replace("value=1", "value = 1").replace("next=value", "next = value"),
+    );
+    const apply = spyOn(editor, "setText").and.callThrough();
+    await main.formatProjected(editor, true);
+    const target = source.replace("value=1", "value = 1").replace("next=value", "next = value");
+    expect(apply).toHaveBeenCalledTimes(1);
+    expect(editor.getText()).toBe(target);
+    expect(editor.getSelections().map((selection) => selection.getText())).toEqual([
+      "#%% First",
+      "value",
+    ]);
+    expect(editor.getSelections()[1].isReversed()).toBe(true);
+    editor.undo();
+    expect(editor.getText()).toBe(source);
+    expect(editor.getSelectedBufferRanges()).toEqual([
+      new Range([0, 0], [0, 9]),
+      new Range([3, 5], [3, 10]),
+    ]);
+    editor.redo();
+    expect(editor.getText()).toBe(target);
+    expect(editor.getSelections().map((selection) => selection.getText())).toEqual([
+      "#%% First",
+      "value",
+    ]);
   });
 
   it("preserves undo, selections and CRLF when applying a validated complete target", async () => {
