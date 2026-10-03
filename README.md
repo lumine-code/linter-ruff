@@ -2,6 +2,9 @@
 
 A wrapper around the Python linter and formatter ruff.
 
+> [!WARNING]
+> **This package is deprecated.** Ruff diagnostics and project scans are now provided by [ide-ruff](https://github.com/lumine-code/ide-ruff) through [ide-client](https://github.com/lumine-code/ide-client) and [linter](https://github.com/lumine-code/linter). Formatting and fixes use the IDE services. This repository is archived and no longer maintained.
+
 The package uses the linter top-level API to visualize [ruff](https://github.com/astral-sh/ruff) errors and other types of messages with ease.
 
 ## Features
@@ -13,17 +16,24 @@ The package uses the linter top-level API to visualize [ruff](https://github.com
 - **Project scans**: scans whole projects or tree-view selections and reports results through the indie linter API.
 - **Severity mapping**: classifies rule codes as error, warning, info or hint via package settings.
 - **Magic commands**: optionally bypasses IPython magic commands like `%timeit` in scripts.
-- **Server aware**: reports nothing for editors where ide-ruff diagnostics are enabled, so the two can be installed together without duplicate messages.
 
 Mixed `.ipy` documents use language-ipython's passive `ipython.source` AST projection. Only Python reaches Ruff; literal Markdown, raw content, foreign magic bodies and IPython syntax remain protected. Diagnostics map codepoint positions back to source UTF-16 coordinates. Fixes are applied as validated minimal edits. Formatting combines the requested Python bodies into one Ruff process using comment delimiters, then restores each body and validates every edit before applying anything. Missing projection services and stale results produce no unsafe fallback or changes.
 
 Project and tree-view scans discover `.ipy` paths through Ruff's configuration rules, exclude them from raw disk linting, and analyze them sequentially through the same projection. Open documents use their buffer snapshot; closed files use an ephemeral grammar model that is always disposed. A changed disk source is discarded before messages are published, and scans never rewrite closed files.
 
-## Installation
+## Migration
 
-To install `linter-ruff` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/linter-ruff`.
+Disable or uninstall `linter-ruff` and install `ide-ruff` with `ide-client`. Keep `linter` installed to display diagnostics and `linter-panel` to browse project scan results.
 
-For command line use, ruff is installed with `pip install ruff`. Ruff supports over 800 lint [rules](https://docs.astral.sh/ruff/rules/), many of which are inspired by popular tools like Flake8, isort and pyupgrade.
+```sh
+lumine --install lumine-code/ide-client
+lumine --install lumine-code/ide-ruff
+lumine --install lumine-code/linter
+```
+
+Use `ide-ruff:lint-projects` and `ide-ruff:lint-selected` for project and tree-view scans. The adapter uses the Ruff executable selected by its Server Path setting, managed installation, or PATH. Install `code-format` for file, selection, and save formatting, and `intentions` for Ruff fixes and import organization.
+
+Keep `language-ipython` installed for mixed `.ipy` documents and `jupyter-view` for live notebook cell analysis. Rule overrides belong in `ide-ruff` settings or Ruff's configuration files; settings under `linter-ruff` are no longer read. The old per-rule severity classifications, star markers, ordinary-script magic bypass, state toggle, and global configuration-file shortcut are retired.
 
 ## Commands
 
@@ -39,10 +49,6 @@ Commands available in `lumine-workspace`:
 - `linter-ruff:format-selected`: format selections of current text-editor.
 
 The last three act on the active editor and decline with a notification when its grammar is not Python.
-
-## Usage
-
-`ide-ruff` runs the same Ruff over the language-server protocol, and both packages can be installed at once. Wherever its adapter serves an editor with diagnostics enabled, this package reports nothing there rather than doubling every message — Jupyter notebooks included, once jupyter-view syncs them to the server; it keeps notebooks the servers do not cover, project-wide and tree-view scans, which cover the files nobody opened, and the fix and format commands, which do what you asked whichever package is reporting. Turning the adapter's diagnostics off immediately hands those open editors back to this linter.
 
 ## Services
 
