@@ -321,7 +321,7 @@ describe("linter-ruff", () => {
 
     it("keeps linting when the adapters covering the editor are other packages", async () => {
       registration = mainModule.consumeIdeClient(
-        fakeIdeClient({ "source.python": [{ id: "ide-pyright" }] }),
+        fakeIdeClient({ "source.python": [{ id: "ide-basedpyright" }] }),
       );
       const calls = fakeRuff();
 
@@ -416,7 +416,7 @@ describe("linter-ruff", () => {
 
     it("ignores a notebook bridge served only by other adapters", async () => {
       registration = mainModule.consumeIdeClient(
-        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-pyright" }] }),
+        fakeIdeClient({}, { [editor.getPath()]: [{ id: "ide-basedpyright" }] }),
       );
       const calls = fakeRuff();
       spyOn(editor, "getGrammar").and.returnValue({ scopeName: "source.jupyter" });
@@ -455,7 +455,7 @@ describe("linter-ruff", () => {
       const lints = [];
       const command = lumine.commands.add(workspaceElement, "linter:lint", () => lints.push(true));
 
-      ideClient.emitFeatureChange({ adapter: { id: "ide-pyright" } });
+      ideClient.emitFeatureChange({ adapter: { id: "ide-basedpyright" } });
       expect(lints).toEqual([]);
       ideClient.emitFeatureChange({ adapter: { id: "ide-ruff" } });
       expect(lints).toEqual([true]);
